@@ -1,11 +1,50 @@
-import React from "react";
+import React, { useEffect } from "react";
 import signupBgImage from "../Assets/images-20230907T172340Z-001/images/Sign up  Loading  1.jpg";
-import { Link } from "react-router-dom";
 import IconBlue from "../Assets/logos and Icons-20230907T172301Z-001/logos and Icons/icon blue.svg";
 import LogoWhite from "../Assets/logos and Icons-20230907T172301Z-001/logos and Icons/Logo white.svg";
 import { HiOutlineMail } from "react-icons/hi";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  registerPropertyLandlord,
+  resetState,
+} from "../Features/auth/authSlice";
 
 const EmailVerification = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const createdUser = JSON.parse(localStorage.getItem("createdUser"));
+
+  const handleNavigate = () => {
+    if (createdUser) {
+      navigate("/code-verification");
+    }
+  };
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("createdUser"));
+    if (storedUser && storedUser.timestamp < new Date().getTime() - 300000) {
+      localStorage.removeItem("createdUser");
+    }
+  }, []);
+
+  const handleResendEmail = () => {
+    if (createdUser) {
+      const resendData = {
+        name: createdUser?.newUser?.name,
+        email: createdUser?.newUser?.email,
+        password: createdUser?.newUser?.password,
+      };
+      dispatch(resetState());
+      dispatch(registerPropertyLandlord(resendData));
+    }
+  };
+
+  const message = useSelector((state) => state.auth.message);
+  const isError = useSelector(
+    (state) => state.auth.isError.registerPropertyLandlord
+  );
+
   return (
     <>
       <div className="relative w-full min-h-screen bg-cover  bg-gray-800 flex justify-center items-center bg-opacity-70 overflow-hidden">
@@ -28,16 +67,30 @@ const EmailVerification = () => {
                   height: 34,
                 }}
               />
-              <h2 className="text-3xl text-gray-800 leading-9 font-bold text-center">
-                Email verification
-              </h2>
             </div>
 
+            <h2 className="text-2xl text-gray-800 leading-9 font-bold text-center">
+              Email verification
+            </h2>
+
+            {isError && message && (
+              <div className="flex items-center justify-center">
+                <p className="text-red-600 text-sm font-normal ">{message} </p>
+              </div>
+            )}
+
             <div>
-              <p className="text-default-gray-500 text-sm md:text-base font-medium leading-5 text-center">
-                We have sent you verification email example@abc.com, Please
-                check it.
-              </p>
+              {createdUser ? (
+                <p className="text-default-gray-500 text-xs md:text-sm font-medium leading-5 text-center">
+                  We have sent a verification code to{" "}
+                  {createdUser?.newUser?.email}. Please check it.
+                </p>
+              ) : (
+                <p className="text-default-gray-500 text-xs md:text-sm font-medium leading-5 text-center">
+                  We have sent a verification code to your email. Please check
+                  it.
+                </p>
+              )}
             </div>
 
             <div className="flex justify-center items-center rounded-full p-4 w-16 h-16 bg-gray-200 flex-shrink">
@@ -51,22 +104,28 @@ const EmailVerification = () => {
             </div>
 
             <button
-              type="submit"
+              type="button"
               className="border rounded-xl w-full py-2  bg-blue-700 hover:bg-blue-600 relative text-white text-base font-semibold"
+              onClick={handleNavigate}
             >
-              verify email
+              Verify email
             </button>
 
             <div>
-              <p className="text-xs text-default-gray-500 md:text-base font-medium mb-4 ">
+              <p className="text-xs text-default-gray-500 md:text-sm font-medium mb-4 ">
                 Didn't recieve an email?{" "}
-                <span className="text-blue-600">Resend</span>
+                <span
+                  className="text-blue-600 cursor-pointer"
+                  onClick={handleResendEmail}
+                >
+                  Resend
+                </span>
               </p>
             </div>
           </form>
         </div>
 
-        <div className=" hidden lg:block lg:w-1/2 gap-2">
+        <div className=" hidden lg:block lg:w-1/2 overflow-hidden gap-2">
           <div className="flex flex-col  justify-items-center items-center">
             <div className="text-white">
               <img
@@ -79,7 +138,7 @@ const EmailVerification = () => {
             </div>
 
             <div>
-              <h6 className="text-white">Sign up or create account</h6>
+              <h6 className="text-white text-sm">Sign up or create account</h6>
             </div>
           </div>
         </div>

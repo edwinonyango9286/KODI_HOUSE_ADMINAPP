@@ -8,7 +8,7 @@ const CustomInput = (props) => {
       <input
         type={type}
         className={`border border-gray-300 rounded-md px-3 block
-             w-full leading-5 transition duration-150 ease-in-out sm:text-sm sm-leading-5 py-2 ${className}`}
+             w-full leading-5 transition duration-200 ease-in-out sm:text-sm sm-leading-5 py-2 focus:outline-none focus:border-blue-600 text-gray-800 ${className}`}
         id={i_id}
         placeholder={placeholder}
         name={name}

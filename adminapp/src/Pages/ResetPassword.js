@@ -60,10 +60,10 @@ const ResetPassword = () => {
                 }}
               />
             </div>
-            <h2 className="text-3xl text-gray-800 leading-9 font-bold text-center mb-6 md:mt-2">
+            <h2 className="text-2xl text-gray-800 leading-9 font-bold text-center mb-6 md:mt-2">
               Reset password
             </h2>
-            <div className=" relative z-10 flex flex-col mb-2  md:mb-4 gap-2">
+            <div className=" relative z-10 flex flex-col mb-2 gap-2">
               <label className="font-medium text-sm text-gray-800">
                 Enter new password
               </label>
@@ -100,7 +100,7 @@ const ResetPassword = () => {
                 </div>
               </div>
             </div>
-            <div className=" relative z-20 flex flex-col mb-2 md:mb-4 gap-2">
+            <div className=" relative z-20 flex flex-col mb-2  gap-2">
               <label className="font-medium text-sm text-gray-800">
                 Re-enter password
               </label>
@@ -158,7 +158,7 @@ const ResetPassword = () => {
           </form>
         </div>
 
-        <div className=" hidden lg:block lg:w-1/2">
+        <div className=" hidden lg:block lg:w-1/2 overflow-hidden gap-2">
           <div className="flex flex-col  justify-items-center items-center gap-2">
             <div className="text-white">
               <img
@@ -170,7 +170,7 @@ const ResetPassword = () => {
               />
             </div>
             <div>
-              <h6 className="text-white">Sign up or create account</h6>
+              <h6 className="text-white text-sm">Sign up or create account</h6>
             </div>
           </div>
         </div>

@@ -21,13 +21,13 @@ const SIGN_IN_SCHEMA = Yup.object().shape({
 });
 
 const SignIn = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const handleToggle = () => {
     setShowPassword(!showPassword);
   };
 
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -35,19 +35,11 @@ const SignIn = () => {
     },
     validationSchema: SIGN_IN_SCHEMA,
     onSubmit: (values) => {
-      dispatch(signUpUser(values));
+      dispatch();
     },
   });
 
-  const authState = useSelector((state) => state);
-  const { user, isError, isSuccess, isLoading, message } = authState.auth;
-  useEffect(() => {
-    if (isSuccess) {
-      navigate("admin");
-    } else {
-      navigate("");
-    }
-  }, [user, isError, isSuccess, isLoading]);
+  const landlord = useSelector((state) => state.auth.landlord);
 
   return (
     <>
@@ -75,10 +67,10 @@ const SignIn = () => {
                 }}
               />
             </div>
-            <h2 className="text-3xl text-gray-800 leading-9 font-bold text-center md:mb-4 ">
+            <h2 className="text-2xl text-gray-800 leading-9 font-bold text-center md:mb-4 ">
               Sign in
             </h2>
-            <div className="flex flex-col mb-2 md:mb-4 gap-2">
+            <div className="flex flex-col gap-1">
               <label className="font-medium text-sm text-gray-800">Email</label>
               <CustomInput
                 type="email"
@@ -110,7 +102,7 @@ const SignIn = () => {
               </div>
             </div>
 
-            <div className="flex z-10 flex-col mb-2 md:mb-4 gap-2">
+            <div className="flex z-10 flex-col mb-2 gap-1">
               <label className="font-medium text-sm text-gray-800">
                 Password
               </label>
@@ -230,8 +222,8 @@ const SignIn = () => {
           </form>
         </div>
 
-        <div className=" hidden lg:block  lg:w-1/2">
-          <div className="flex flex-col  justify-items-center items-center gap-2">
+        <div className=" hidden lg:block  lg:w-1/2 overflow-hidden gap-2">
+          <div className="flex flex-col  justify-items-center items-center">
             <div className="text-white">
               <img
                 src={LogoWhite}
@@ -243,7 +235,7 @@ const SignIn = () => {
             </div>
 
             <div>
-              <h6 className="text-white">Sign up or create account</h6>
+              <h6 className="text-white text-sm">Sign up or create account</h6>
             </div>
           </div>
         </div>

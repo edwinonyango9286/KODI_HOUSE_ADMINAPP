@@ -50,7 +50,7 @@ const ForgotPassword = () => {
                 }}
               />
             </div>
-            <h2 className="text-3xl text-gray-800 leading-9 font-bold text-center ">
+            <h2 className="text-2xl text-gray-800 leading-9 font-bold text-center ">
               Forgot your password?
             </h2>
             <div className="my-6  ">
@@ -59,7 +59,7 @@ const ForgotPassword = () => {
                 reset your password.
               </p>
             </div>
-            <div className="flex flex-col mb-2 md:mb-4 gap-2">
+            <div className="flex flex-col gap-1">
               <label className="font-medium text-sm text-gray-800">Email</label>
               <CustomInput
                 type="email"
@@ -118,7 +118,7 @@ const ForgotPassword = () => {
           </form>
         </div>
 
-        <div className="hidden lg:block lg:w-1/2 gap-2">
+        <div className="hidden lg:block lg:w-1/2 overflow-hidden gap-2">
           <div className="flex flex-col  justify-items-center items-center">
             <div className="text-white">
               <img
@@ -130,7 +130,7 @@ const ForgotPassword = () => {
               />
             </div>
             <div>
-              <h6 className="text-white">Sign up or create account</h6>
+              <h6 className="text-white text-sm">Sign up or create account</h6>
             </div>
           </div>
         </div>

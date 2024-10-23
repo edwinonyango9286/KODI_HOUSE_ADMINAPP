@@ -14,7 +14,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import LogoWhite from "../Assets/logos and Icons-20230907T172301Z-001/logos and Icons/Logo white.svg";
 import { BsFillExclamationCircleFill } from "react-icons/bs";
-import { registerPropertyLandlord } from "../Features/auth/authSlice";
+import {
+  registerPropertyLandlord,
+  resetState,
+} from "../Features/auth/authSlice";
 import CircularProgress from "@mui/material/CircularProgress";
 
 const SIGN_UP_SCHEMA = Yup.object().shape({
@@ -31,11 +34,23 @@ const SIGN_UP_SCHEMA = Yup.object().shape({
 
 const SignUp = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const createdUser = useSelector((state) => state.auth.createdUser);
+  const isSuccess = useSelector(
+    (state) => state.auth.isSuccess.registerPropertyLandlord
+  );
+  const isLoading = useSelector(
+    (state) => state.auth.isLoading.registerPropertyLandlord
+  );
+  const message = useSelector((state) => state.auth.message);
+  const isError = useSelector(
+    (state) => state.auth.isError.registerPropertyLandlord
+  );
+
   const handleToggle = () => {
     setShowPassword(!showPassword);
   };
-
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -44,14 +59,30 @@ const SignUp = () => {
     },
     validationSchema: SIGN_UP_SCHEMA,
     onSubmit: (values, { resetForm }) => {
+      dispatch(resetState());
       dispatch(registerPropertyLandlord(values));
       resetForm();
     },
   });
 
-  const isLoading = useSelector(
-    (state) => state?.auth?.isLoading?.registerPropertyLandlord
-  );
+  useEffect(() => {
+    if (isSuccess && createdUser) {
+      dispatch(resetState());
+      navigate("/email-verification");
+    }
+    if (isError && message) {
+      setTimeout(() => {
+        dispatch(resetState());
+      }, 10000);
+    }
+  }, [isSuccess, createdUser, isError, message, dispatch]);
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("createdUser"));
+    if (storedUser && storedUser.timestamp < new Date().getTime() - 300000) {
+      localStorage.removeItem("createdUser");
+    }
+  }, []);
 
   return (
     <>
@@ -80,11 +111,17 @@ const SignUp = () => {
               />
             </div>
 
-            <h2 className="text-3xl text-gray-800 leading-9 font-bold text-center ">
+            <h2 className="text-2xl text-gray-800 leading-9 font-bold text-center ">
               Create an account
             </h2>
 
-            <div className="mt-4 mb-4 flex justify-center items-center">
+            {isError && message && (
+              <div className="flex items-center justify-center">
+                <p className="text-red-600 text-sm font-normal ">{message} </p>
+              </div>
+            )}
+
+            <div className="mt-2 mb-4 flex justify-center items-center">
               <p className="text-default-gray-500 text-sm md:text-base font-normal leading-5 ">
                 Create account with socials
               </p>
@@ -130,7 +167,7 @@ const SignUp = () => {
               <div className="border-b-2 ml-4 border-gray-400 flex-grow"></div>
             </div>
 
-            <div className="flex flex-col mb-2 md:mb-4 gap-2">
+            <div className="flex flex-col gap-1">
               <label className="font-medium text-base text-gray-800">
                 Name
               </label>
@@ -162,7 +199,8 @@ const SignUp = () => {
                 </div>
               </div>
             </div>
-            <div className="flex flex-col mb-2 md:mb-4 gap-2">
+
+            <div className="flex flex-col gap-1">
               <label className="font-medium text-sm text-gray-800">Email</label>
               <CustomInput
                 type="email"
@@ -193,7 +231,7 @@ const SignUp = () => {
               </div>
             </div>
 
-            <div className="flex z-10 flex-col mb-2 md:mb-4 gap-2">
+            <div className="flex z-10 flex-col gap-1">
               <label className="font-medium text-sm text-gray-800">
                 Password
               </label>
@@ -284,8 +322,8 @@ const SignUp = () => {
                 style={{ width: 191, height: 53 }}
               />
             </div>
-            <div className="">
-              <h6 className="text-white">Sign up or create account</h6>
+            <div>
+              <h6 className="text-white text-sm">Sign up or create account</h6>
             </div>
           </div>
         </div>
