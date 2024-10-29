@@ -14,22 +14,19 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import LogoWhite from "../Assets/logos and Icons-20230907T172301Z-001/logos and Icons/Logo white.svg";
 import { BsFillExclamationCircleFill } from "react-icons/bs";
-import {
-  registerPropertyLandlord,
-  resetState,
-} from "../Features/auth/authSlice";
+import { registerUser, resetState } from "../Features/auth/authSlice";
 import CircularProgress from "@mui/material/CircularProgress";
 
 const SIGN_UP_SCHEMA = Yup.object().shape({
-  name: Yup.string().required(),
-  email: Yup.string().email().required(),
+  name: Yup.string().required("Please enter your name."),
+  email: Yup.string().email().required("Please enter your email."),
   password: Yup.string()
     .min(8)
     .matches(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
       "Password must have a mix of upper and lowercase letters, atleast one number and a special character,"
     )
-    .required(),
+    .required("Please enter your password."),
 });
 
 const SignUp = () => {
@@ -37,16 +34,11 @@ const SignUp = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const createdUser = useSelector((state) => state.auth.createdUser);
-  const isSuccess = useSelector(
-    (state) => state.auth.isSuccess.registerPropertyLandlord
-  );
-  const isLoading = useSelector(
-    (state) => state.auth.isLoading.registerPropertyLandlord
-  );
+
+  const isSuccess = useSelector((state) => state.auth.isSuccess.registerUser);
+  const isLoading = useSelector((state) => state.auth.isLoading.registerUser);
   const message = useSelector((state) => state.auth.message);
-  const isError = useSelector(
-    (state) => state.auth.isError.registerPropertyLandlord
-  );
+  const isError = useSelector((state) => state.auth.isError.registerUser);
 
   const handleToggle = () => {
     setShowPassword(!showPassword);
@@ -60,14 +52,13 @@ const SignUp = () => {
     validationSchema: SIGN_UP_SCHEMA,
     onSubmit: (values, { resetForm }) => {
       dispatch(resetState());
-      dispatch(registerPropertyLandlord(values));
+      dispatch(registerUser(values));
       resetForm();
     },
   });
 
   useEffect(() => {
     if (isSuccess && createdUser) {
-      dispatch(resetState());
       navigate("/email-verification");
     }
     if (isError && message) {
@@ -96,7 +87,7 @@ const SignUp = () => {
         <div className="flex justify-center items-center h-full w-full opacity-95 lg:w-1/2 lg:my-4">
           <form
             onSubmit={formik.handleSubmit}
-            className="bg-white  m-4 p-4 md:p-10 md:py-8 w-full  gap-2 h-full md:w-3/4 rounded-md md:h-auto"
+            className="bg-white  m-4 p-4 md:p-10 md:py-8 w-full h-full md:w-3/4 rounded-md md:h-auto gap-2"
           >
             <div className="flex items-center justify-center mb-2">
               <img
@@ -117,7 +108,7 @@ const SignUp = () => {
 
             {isError && message && (
               <div className="flex items-center justify-center">
-                <p className="text-red-600 text-sm font-normal ">{message} </p>
+                <p className="text-red-600 text-xs font-normal ">{message}</p>
               </div>
             )}
 
@@ -185,7 +176,7 @@ const SignUp = () => {
                 onBlur={formik.handleBlur("name")}
                 value={formik.values.name}
               />
-              <div className=" relative z-20 flex flex-col mb-2 gap-2 md:mb-4">
+              <div className="relative z-20 flex flex-col mb-2 gap-2 md:mb-4">
                 {formik.touched.name && formik.errors.name && (
                   <span className="absolute right-0 flex items-center p-3 mt-[-46px] ">
                     <BsFillExclamationCircleFill className="text-red-600 flex-shrink-0 " />
@@ -193,7 +184,7 @@ const SignUp = () => {
                 )}
 
                 <div>
-                  <p className="text-sm font-normal text-red-600">
+                  <p className="text-xs font-normal text-red-600">
                     {formik.touched.name && formik.errors.name}
                   </p>
                 </div>
@@ -224,7 +215,7 @@ const SignUp = () => {
                 )}
 
                 <div>
-                  <p className="text-sm font-normal text-red-600">
+                  <p className="text-xs font-normal text-red-600">
                     {formik.touched.email && formik.errors.email}
                   </p>
                 </div>
@@ -251,7 +242,7 @@ const SignUp = () => {
                 value={formik.values.password}
               />
 
-              <div className=" relative z-20 flex flex-col mb-2 md:mb-4 gap-2">
+              <div className="relative z-20 flex flex-col mb-2 md:mb-4 gap-2">
                 <button
                   type="button"
                   onClick={handleToggle}
@@ -263,7 +254,7 @@ const SignUp = () => {
                   />
                 </button>
                 <div>
-                  <p className="text-sm font-normal text-red-600">
+                  <p className="text-xs font-normal text-red-600">
                     {formik.touched.password && formik.errors.password}
                   </p>
                 </div>
@@ -292,6 +283,7 @@ const SignUp = () => {
             ) : (
               <button
                 type="submit"
+                disabled={isLoading}
                 className="border rounded-xl w-full py-2 mt-8 bg-blue-700 hover:bg-blue-600 relative text-white text-base font-semibold"
               >
                 Create an account

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import signupBgImage from "../Assets/images-20230907T172340Z-001/images/Sign up  Loading  1.jpg";
 import IconBlue from "../Assets/logos and Icons-20230907T172301Z-001/logos and Icons/icon blue.svg";
 import LogoWhite from "../Assets/logos and Icons-20230907T172301Z-001/logos and Icons/Logo white.svg";
@@ -6,8 +6,8 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  activateNewLandlordAccount,
-  registerPropertyLandlord,
+  activateUser,
+  registerUser,
   resetState,
 } from "../Features/auth/authSlice";
 import { useNavigate } from "react-router-dom";
@@ -25,20 +25,19 @@ const CodeVerification = () => {
   const navigate = useNavigate();
   const createdUser = JSON.parse(localStorage.getItem("createdUser"));
   const activationToken = createdUser?.activationToken;
+  const [tokenError, setTokenError] = useState("");
 
-  const isSuccess = useSelector(
-    (state) => state.auth.isSuccess.activateNewLandlordAccount
-  );
-  const activatedLandlord = useSelector(
-    (state) => state.auth.activatedLandlord
+  const isSuccess = useSelector((state) => state.auth.isSuccess.activateUser);
+  const activatedUser = useSelector((state) => state.auth.activatedUser);
+
+  const isError = useSelector((state) => state.auth.isError.activateUser);
+  const isLoading = useSelector((state) => state.auth.isLoading.activateUser);
+
+  const messageResendEmail = useSelector((state) => state.auth.message);
+  const isErrorResendEmail = useSelector(
+    (state) => state.auth.isError.registerUser
   );
 
-  const isError = useSelector(
-    (state) => state.auth.isError.activateNewLandlordAccount
-  );
-  const isLoading = useSelector(
-    (state) => state.auth.isLoading.activateNewLandlordAccount
-  );
   const message = useSelector((state) => state.auth.message);
   const formik = useFormik({
     initialValues: {
@@ -48,14 +47,26 @@ const CodeVerification = () => {
       code4: "",
     },
     validationSchema: CODE_VERIFICATION_SCHEMA,
-    onSubmit: (values) => {
+    onSubmit: (values, { resetForm }) => {
+      if (!activationToken) {
+        setTokenError(
+          "Invalid activation code. Click resend to request for a new activation code."
+        );
+        resetForm();
+        setTimeout(() => {
+          setTokenError("");
+        }, 10000);
+        return;
+      }
+
       const activationCode = `${values.code1}${values.code2}${values.code3}${values.code4}`;
       const data = {
         activationToken,
         activationCode,
       };
       dispatch(resetState());
-      dispatch(activateNewLandlordAccount(data));
+      dispatch(activateUser(data));
+      resetForm();
     },
   });
 
@@ -67,16 +78,16 @@ const CodeVerification = () => {
   }, []);
 
   useEffect(() => {
-    if (isSuccess && activatedLandlord) {
+    if (isSuccess && activatedUser) {
       dispatch(resetState());
       navigate("/");
     }
-    if (isError && message) {
+    if ((isError && message) || (isErrorResendEmail && messageResendEmail)) {
       setTimeout(() => {
         dispatch(resetState());
       }, 10000);
     }
-  }, [isSuccess, activateNewLandlordAccount, isError, message, dispatch]);
+  }, [isSuccess, activateUser, isError, message, dispatch]);
 
   const handleResendEmail = () => {
     if (createdUser) {
@@ -86,7 +97,7 @@ const CodeVerification = () => {
         password: createdUser?.newUser?.password,
       };
       dispatch(resetState());
-      dispatch(registerPropertyLandlord(resendData));
+      dispatch(registerUser(resendData));
     }
   };
 
@@ -102,7 +113,7 @@ const CodeVerification = () => {
         <div className="flex justify-center items-center h-full w-full m-4 lg:w-1/2 opacity-95">
           <form
             onSubmit={formik.handleSubmit}
-            className=" flex justify-center items-center flex-col w-full md:w-3/4 h-auto flex-shrink-0 bg-white p-4 rounded-md md:p-10 gap-4"
+            className=" flex justify-center items-center flex-col w-full md:w-3/4 h-auto flex-shrink-0 bg-white p-4 rounded-md md:p-10 gap-2"
           >
             <div className="flex items-center justify-center flex-col ">
               <img
@@ -121,9 +132,25 @@ const CodeVerification = () => {
               Code verification
             </h2>
 
+            {isErrorResendEmail && messageResendEmail && (
+              <div className="flex items-center justify-center">
+                <p className="text-red-600 text-xs font-normal ">
+                  {messageResendEmail}
+                </p>
+              </div>
+            )}
+
+            {tokenError && (
+              <div className="flex items-center justify-center">
+                <p className="text-red-600 text-xs font-normal ">
+                  {tokenError}
+                </p>
+              </div>
+            )}
+
             {isError && message && (
               <div className="flex items-center justify-center">
-                <p className="text-red-600 text-sm font-normal ">{message} </p>
+                <p className="text-red-600 text-xs font-normal ">{message}</p>
               </div>
             )}
 

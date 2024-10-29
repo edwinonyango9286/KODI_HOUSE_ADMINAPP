@@ -14,10 +14,18 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import LogoWhite from "../Assets/logos and Icons-20230907T172301Z-001/logos and Icons/Logo white.svg";
 import { BsFillExclamationCircleFill } from "react-icons/bs";
+import { loginUser, resetState } from "../Features/auth/authSlice";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const SIGN_IN_SCHEMA = Yup.object().shape({
-  email: Yup.string().email().required("Please enter your email"),
-  password: Yup.string().required("Please enter your password"),
+  email: Yup.string().email().required("Please enter your email."),
+  password: Yup.string()
+    .min(8)
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+      "Password must have a mix of upper and lowercase letters, atleast one number and a special character,"
+    )
+    .required("Please enter your password."),
 });
 
 const SignIn = () => {
@@ -28,18 +36,35 @@ const SignIn = () => {
     setShowPassword(!showPassword);
   };
 
+  const isSuccess = useSelector((state) => state.auth.isSuccess.loginUser);
+  const user = useSelector((state) => state.auth.user);
+  const isError = useSelector((state) => state.auth.isError.loginUser);
+  const message = useSelector((state) => state.auth.message);
+  const isLoading = useSelector((state) => state.auth.isLoading.loginUser);
+
   const formik = useFormik({
     initialValues: {
       email: "",
       password: "",
     },
     validationSchema: SIGN_IN_SCHEMA,
-    onSubmit: (values) => {
-      dispatch();
+    onSubmit: (values, { resetForm }) => {
+      dispatch(resetState());
+      dispatch(loginUser(values));
+      resetForm();
     },
   });
 
-  const landlord = useSelector((state) => state.auth.landlord);
+  useEffect(() => {
+    if (user && isSuccess) {
+      navigate("/admin");
+    }
+    if (isError && message) {
+      setTimeout(() => {
+        dispatch(resetState());
+      }, 10000);
+    }
+  }, [user, isSuccess, isError, message, dispatch]);
 
   return (
     <>
@@ -53,7 +78,7 @@ const SignIn = () => {
         <div className="flex justify-center items-center h-full w-full opacity-95 lg:w-1/2 lg:my-4">
           <form
             onSubmit={formik.handleSubmit}
-            className="bg-white  m-4 p-4 md:p-10 md:py-8 w-full  gap-2 h-full md:w-3/4 rounded-md md:h-auto"
+            className="bg-white  m-4 p-4 md:p-10 md:py-8 w-full h-full md:w-3/4 rounded-md md:h-auto gap-2"
           >
             <div className="flex items-center justify-center mb-2">
               <img
@@ -67,9 +92,17 @@ const SignIn = () => {
                 }}
               />
             </div>
+
             <h2 className="text-2xl text-gray-800 leading-9 font-bold text-center md:mb-4 ">
               Sign in
             </h2>
+
+            {isError && message && (
+              <div className="flex items-center justify-center">
+                <p className="text-red-600 text-xs font-normal ">{message}</p>
+              </div>
+            )}
+
             <div className="flex flex-col gap-1">
               <label className="font-medium text-sm text-gray-800">Email</label>
               <CustomInput
@@ -95,7 +128,7 @@ const SignIn = () => {
                 )}
 
                 <div>
-                  <p className="text-sm font-normal text-red-600">
+                  <p className="text-xs font-normal text-red-600">
                     {formik.touched.email && formik.errors.email}
                   </p>
                 </div>
@@ -133,7 +166,7 @@ const SignIn = () => {
                   />
                 </button>
                 <div>
-                  <p className="text-sm font-normal text-red-600">
+                  <p className="text-xs font-normal text-red-600">
                     {formik.touched.password && formik.errors.password}
                   </p>
                 </div>
@@ -154,12 +187,26 @@ const SignIn = () => {
                 </Link>
               </div>
             </div>
-            <button
-              type="submit"
-              className="border rounded-xl w-full py-2 mt-8 bg-blue-700 hover:bg-blue-600 relative text-white text-base font-semibold"
-            >
-              Sign in
-            </button>
+
+            {isLoading ? (
+              <button
+                type="submit"
+                className="border rounded-xl w-full py-2 mt-8 bg-gray-200 relative text-gray-400 text-base font-semibold  flex justify-center items-center"
+              >
+                <span>Sign in</span>
+                <div className=" absolute right-2">
+                  <CircularProgress size={20} thickness={4} />
+                </div>
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="border rounded-xl w-full py-2 mt-8 bg-blue-700 hover:bg-blue-600 relative text-white text-base font-semibold"
+              >
+                Sign in
+              </button>
+            )}
 
             <div className="mt-4 flex justify-center items-center ">
               <div className="border-b-2 mr-4 border-gray-400 flex-grow"></div>

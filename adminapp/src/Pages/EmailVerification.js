@@ -5,21 +5,15 @@ import LogoWhite from "../Assets/logos and Icons-20230907T172301Z-001/logos and 
 import { HiOutlineMail } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  registerPropertyLandlord,
-  resetState,
-} from "../Features/auth/authSlice";
+import { registerUser, resetState } from "../Features/auth/authSlice";
 
 const EmailVerification = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const createdUser = JSON.parse(localStorage.getItem("createdUser"));
-
-  const handleNavigate = () => {
-    if (createdUser) {
-      navigate("/code-verification");
-    }
-  };
+  const message = useSelector((state) => state.auth.message);
+  const isError = useSelector((state) => state.auth.isError.registerUser);
+  const isSuccess = useSelector((state) => state.auth.isSuccess.registerUser);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("createdUser"));
@@ -36,14 +30,23 @@ const EmailVerification = () => {
         password: createdUser?.newUser?.password,
       };
       dispatch(resetState());
-      dispatch(registerPropertyLandlord(resendData));
+      dispatch(registerUser(resendData));
     }
   };
 
-  const message = useSelector((state) => state.auth.message);
-  const isError = useSelector(
-    (state) => state.auth.isError.registerPropertyLandlord
-  );
+  useEffect(() => {
+    if (isError && message) {
+      setTimeout(() => {
+        dispatch(resetState());
+      }, 10000);
+    }
+  }, [isError, message, dispatch]);
+
+  const handleNavigate = () => {
+    if (isSuccess && createdUser) {
+      navigate("/code-verification");
+    }
+  };
 
   return (
     <>
@@ -75,7 +78,7 @@ const EmailVerification = () => {
 
             {isError && message && (
               <div className="flex items-center justify-center">
-                <p className="text-red-600 text-sm font-normal ">{message} </p>
+                <p className="text-red-600 text-xs font-normal ">{message} </p>
               </div>
             )}
 

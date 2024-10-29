@@ -1,22 +1,55 @@
 import { createSlice, createAsyncThunk, createAction } from "@reduxjs/toolkit";
 import authService from "./authServices";
 
-export const registerPropertyLandlord = createAsyncThunk(
+export const registerUser = createAsyncThunk(
   "auth/user-register",
   async (data, thunkAPI) => {
     try {
-      return await authService.registerLandlord(data);
+      return await authService.registerNewUser(data);
     } catch (error) {
       return thunkAPI.rejectWithValue(error);
     }
   }
 );
 
-export const activateNewLandlordAccount = createAsyncThunk(
-  "auth/activate-landlord-register",
+export const activateUser = createAsyncThunk(
+  "auth/activate-user",
   async (data, thunkAPI) => {
     try {
-      return await authService.activateNewLandlord(data);
+      return await authService.activateNewUser(data);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
+export const loginUser = createAsyncThunk(
+  "auth/login-user",
+  async (data, thunkAPI) => {
+    try {
+      return await authService.loginNewUser(data);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
+export const requestPasswordResetToken = createAsyncThunk(
+  "auth/request-password-reset-token",
+  async (email, thunkAPI) => {
+    try {
+      return await authService.passwordResetToken(email);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
+export const resetPassword = createAsyncThunk(
+  "auth/reset-password",
+  async (data, thunkAPI) => {
+    try {
+      return await authService.resetUserPassword(data);
     } catch (error) {
       return thunkAPI.rejectWithValue(error);
     }
@@ -26,19 +59,29 @@ export const activateNewLandlordAccount = createAsyncThunk(
 export const resetState = createAction("Reset_all");
 
 const initialState = {
+  user: {},
   createdUser: {},
-  activatedLandlord: {},
+  activatedUser: {},
   isError: {
-    registerPropertyLandlord: false,
-    activateNewLandlordAccount: false,
+    registerUser: false,
+    activateUser: false,
+    loginUser: false,
+    requestPasswordResetToken: false,
+    resetPassword: false,
   },
   isLoading: {
-    registerPropertyLandlord: false,
-    activateNewLandlordAccount: false,
+    registerUser: false,
+    activateUser: false,
+    loginUser: false,
+    requestPasswordResetToken: false,
+    resetPassword: false,
   },
   isSuccess: {
-    registerPropertyLandlord: false,
-    activateNewLandlordAccount: false,
+    registerUser: false,
+    activateUser: false,
+    loginUser: false,
+    requestPasswordResetToken: false,
+    resetPassword: false,
   },
   message: "",
 };
@@ -49,40 +92,109 @@ const authSlice = createSlice({
   reducer: {},
   extraReducers: (builder) => {
     builder
-      .addCase(registerPropertyLandlord.pending, (state) => {
-        state.isLoading.registerPropertyLandlord = true;
+      .addCase(registerUser.pending, (state) => {
+        state.isLoading.registerUser = true;
       })
-      .addCase(registerPropertyLandlord.fulfilled, (state, action) => {
-        state.isError.registerPropertyLandlord = false;
-        state.isLoading.registerPropertyLandlord = false;
-        state.isSuccess.registerPropertyLandlord = true;
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.isError.registerUser = false;
+        state.isLoading.registerUser = false;
+        state.isSuccess.registerUser = true;
         state.createdUser = action?.payload;
         state.message = action?.payload?.response?.data?.message;
         const timestamp = new Date().getTime();
         const storedUser = { ...action.payload, timestamp };
         localStorage.setItem("createdUser", JSON.stringify(storedUser));
       })
-      .addCase(registerPropertyLandlord.rejected, (state, action) => {
-        state.isError.registerPropertyLandlord = true;
-        state.isLoading.registerPropertyLandlord = false;
-        state.isSuccess.registerPropertyLandlord = false;
+      .addCase(registerUser.rejected, (state, action) => {
+        state.isError.registerUser = true;
+        state.isLoading.registerUser = false;
+        state.isSuccess.registerUser = false;
+        if (action?.payload?.response?.data?.message) {
+          state.message = action?.payload?.response?.data?.message;
+        } else {
+          state.message = "Something went wrong. Please try again later.";
+        }
+      })
+      .addCase(activateUser.pending, (state) => {
+        state.isLoading.activateUser = true;
+      })
+      .addCase(activateUser.fulfilled, (state, action) => {
+        state.isError.activateUser = false;
+        state.isLoading.activateUser = false;
+        state.isSuccess.activateUser = true;
+        state.activatedUser = action?.payload;
+        state.message = action?.payload?.response?.data?.message;
+        localStorage.removeItem("createdUser");
+      })
+      .addCase(activateUser.rejected, (state, action) => {
+        state.isError.activateUser = true;
+        state.isLoading.activateUser = false;
+        state.isSuccess.activateUser = false;
+        if (action?.payload?.response?.data?.message) {
+          state.message = action?.payload?.response?.data?.message;
+        } else {
+          state.message = "Something went wrong. Please try again later.";
+        }
+      })
+
+      .addCase(loginUser.pending, (state) => {
+        state.isLoading.loginUser = true;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.isError.loginUser = false;
+        state.isLoading.loginUser = false;
+        state.isSuccess.loginUser = true;
+        state.user = action?.payload;
+        state.message = action?.payload?.response?.data?.message;
+        localStorage.setItem("user", JSON.stringify(action?.payload));
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.isError.loginUser = true;
+        state.isLoading.loginUser = false;
+        state.isSuccess.loginUser = false;
+        if (action?.payload?.response?.data?.message) {
+          state.message = action?.payload?.response?.data?.message;
+        } else {
+          state.message = "Something went wrong. Please try again later.";
+        }
+      })
+      .addCase(requestPasswordResetToken.pending, (state) => {
+        state.isLoading.requestPasswordResetToken = true;
+      })
+      .addCase(requestPasswordResetToken.fulfilled, (state, action) => {
+        state.isError.requestPasswordResetToken = false;
+        state.isLoading.requestPasswordResetToken = false;
+        state.isSuccess.requestPasswordResetToken = true;
         state.message = action?.payload?.response?.data?.message;
       })
-      .addCase(activateNewLandlordAccount.pending, (state) => {
-        state.isLoading.activateNewLandlordAccount = true;
+      .addCase(requestPasswordResetToken.rejected, (state, action) => {
+        state.isError.requestPasswordResetToken = true;
+        state.isLoading.requestPasswordResetToken = false;
+        state.isSuccess.requestPasswordResetToken = false;
+        if (action?.payload?.response?.data?.message) {
+          state.message = action?.payload?.response?.data?.message;
+        } else {
+          state.message = "Something went wrong. Please try again later.";
+        }
       })
-      .addCase(activateNewLandlordAccount.fulfilled, (state, action) => {
-        state.isError.activateNewLandlordAccount = false;
-        state.isLoading.activateNewLandlordAccount = false;
-        state.isSuccess.activateNewLandlordAccount = true;
-        state.activatedLandlord = action?.payload;
+      .addCase(resetPassword.pending, (state) => {
+        state.isLoading.resetPassword = true;
+      })
+      .addCase(resetPassword.fulfilled, (state, action) => {
+        state.isError.resetPassword = false;
+        state.isLoading.resetPassword = false;
+        state.isSuccess.resetPassword = true;
         state.message = action?.payload?.response?.data?.message;
       })
-      .addCase(activateNewLandlordAccount.rejected, (state, action) => {
-        state.isError.activateNewLandlordAccount = true;
-        state.isLoading.activateNewLandlordAccount = false;
-        state.isSuccess.activateNewLandlordAccount = false;
-        state.message = action?.payload?.response?.data?.message;
+      .addCase(resetPassword.rejected, (state, action) => {
+        state.isError.resetPassword = true;
+        state.isLoading.resetPassword = false;
+        state.isSuccess.resetPassword = false;
+        if (action?.payload?.response?.data?.message) {
+          state.message = action?.payload?.response?.data?.message;
+        } else {
+          state.message = "Something went wrong. Please try again later.";
+        }
       })
 
       .addCase(resetState, () => initialState);

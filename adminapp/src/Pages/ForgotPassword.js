@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import signupBgImage from "../Assets/images-20230907T172340Z-001/images/Sign up  Loading  1.jpg";
@@ -7,21 +7,46 @@ import CustomInput from "../Components/CustomInput";
 import IconBlue from "../Assets/logos and Icons-20230907T172301Z-001/logos and Icons/icon blue.svg";
 import LogoWhite from "../Assets/logos and Icons-20230907T172301Z-001/logos and Icons/Logo white.svg";
 import { BsFillExclamationCircleFill } from "react-icons/bs";
-
+import { useDispatch, useSelector } from "react-redux";
+import {
+  requestPasswordResetToken,
+  resetState,
+} from "../Features/auth/authSlice";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const FORGOT_PASSWORD_SCHEMA = Yup.object().shape({
-  email: Yup.string().email().required("Please enter your email"),
+  email: Yup.string().email().required("Please enter your email."),
 });
 
 const ForgotPassword = () => {
+  const dispatch = useDispatch();
+
+  const message = useSelector((state) => state.auth.message);
+  const isLoading = useSelector(
+    (state) => state.auth.isLoading.requestPasswordResetToken
+  );
+  const isError = useSelector(
+    (state) => state.auth.isError.requestPasswordResetToken
+  );
   const formik = useFormik({
     initialValues: {
       email: "",
     },
     validationSchema: FORGOT_PASSWORD_SCHEMA,
-
-    onSubmit: (values) => {},
+    onSubmit: (values, { resetForm }) => {
+      dispatch(resetState());
+      dispatch(requestPasswordResetToken(values));
+      resetForm();
+    },
   });
+
+  useEffect(() => {
+    if (isError && message) {
+      setTimeout(() => {
+        dispatch(resetState());
+      }, 10000);
+    }
+  }, [isError, message]);
 
   return (
     <>
@@ -53,8 +78,15 @@ const ForgotPassword = () => {
             <h2 className="text-2xl text-gray-800 leading-9 font-bold text-center ">
               Forgot your password?
             </h2>
-            <div className="my-6  ">
-              <p className="text-default-gray-500 text-sm md:text-base font-medium leading-5 ">
+
+            {isError && message && (
+              <div className="flex items-center justify-center">
+                <p className="text-red-600 text-xs font-normal ">{message}</p>
+              </div>
+            )}
+
+            <div className="my-6">
+              <p className="text-default-gray-500 text-xs md:text-sm font-medium leading-5 ">
                 Don't fret! Just type your email and we will send you a code to
                 reset your password.
               </p>
@@ -84,7 +116,7 @@ const ForgotPassword = () => {
                 )}
 
                 <div>
-                  <p className="text-sm font-normal text-red-600">
+                  <p className="text-xs font-normal text-red-600">
                     {formik.touched.email && formik.errors.email}
                   </p>
                 </div>
@@ -99,12 +131,25 @@ const ForgotPassword = () => {
               </div>
             </div>
 
-            <button
-              type="submit"
-              className="border rounded-xl w-full py-2 mt-8 bg-blue-700 hover:bg-blue-600 relative text-base font-semibold text-white"
-            >
-              Recover password
-            </button>
+            {isLoading ? (
+              <button
+                type="submit"
+                className="border rounded-xl w-full py-2 mt-8 bg-gray-200 relative text-gray-400 text-base font-semibold  flex justify-center items-center"
+              >
+                <span>Recover password</span>
+                <div className=" absolute right-2">
+                  <CircularProgress size={20} thickness={4} />
+                </div>
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="border rounded-xl w-full py-2 mt-8 bg-blue-700 hover:bg-blue-600 relative text-white text-base font-semibold"
+              >
+                Recover password
+              </button>
+            )}
 
             <div className="flex items-center justify-between mt-4">
               <div className="text-gray-500 text-xs font-medium leading-6">
