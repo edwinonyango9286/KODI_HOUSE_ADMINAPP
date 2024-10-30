@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "react-toastify/dist/ReactToastify.css";
 import { Link, Outlet } from "react-router-dom";
 import { Layout, Menu, Button, theme } from "antd";
@@ -28,13 +28,28 @@ import { IoSearchSharp } from "react-icons/io5";
 const { Header, Sider, Content } = Layout;
 
 const MainLayout = () => {
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const [collapsed, setCollapsed] = useState(false);
   const [open, setOpen] = useState(false);
   const {
     token: { colorBgContainer },
   } = theme.useToken();
-  const navigate = useNavigate();
+
+  const handleResize = () => {
+    if (window.innerWidth < 640) {
+      setCollapsed(true);
+    } else {
+      setCollapsed(false);
+    }
+  };
+  useEffect(() => {
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   return (
     <Layout>
@@ -77,9 +92,9 @@ const MainLayout = () => {
             },
 
             {
-              key: "",
+              key: "/",
               icon: <AiOutlineHome className="text-sm" />,
-              label: "Dashboard",
+              label: <span className="">Dashboard</span>,
             },
             {
               key: "Applications",
@@ -187,33 +202,34 @@ const MainLayout = () => {
 
       <Layout>
         <Header
-          className="flex  items-center justify-between relative"
+          className="flex items-center justify-between relative"
           style={{ padding: 0, background: colorBgContainer }}
         >
           <Button
             type="text"
-            icon={
-              collapsed ? (
-                <IoMenuSharp className="text-xl" />
-              ) : (
-                <IoMenuSharp className="text-xl" />
-              )
-            }
+            icon={<IoMenuSharp className="text-xl" />}
             onClick={() => setCollapsed(!collapsed)}
-            className="trigger ml-4"
+            className="trigger ml-1 ml-lg-4"
           />
 
-          <div>
+          <div className="">
             <input
               type="text"
-              className="bg-gray-100 rounded-md border border-gray-200 focus:outline-none placeholder-gray-500 placeholder:text-sm relative pl-9"
-              style={{ width: "450px", height: "32px" }}
+              className={` bg-gray-100 rounded-md border border-gray-200 focus:outline-none placeholder-gray-500 placeholder:text-sm relative pl-6 pl-lg-9 w-[172px] h-[26px]  md:w-[220px]  lg:w-[450px]  lg:h-[34px]`}
               placeholder="Search"
             />
-            <IoSearchSharp className="text-base absolute   text-gray-500" style={{ top : "26px",   left:"228px"}} />
+            <IoSearchSharp
+              className={`${
+                !collapsed ? "left-8" : "left-12"
+              } text-base absolute text-gray-500 md:top-[25px] md:left-[108px] lg:top-[26px] lg:left-[242px] top-6`}
+            />
           </div>
 
-          <div className="flex gap-4 items-center justify-center mr-8">
+          <div
+            className={` ${
+              !collapsed ? "hidden" : " md:block"
+            } flex gap-1 gap-sm-2 gap-lg-4 items-center justify-center mr-4 mr-lg-8`}
+          >
             <div className="position-relative">
               <FiMail className="text-base" />
             </div>
@@ -222,24 +238,21 @@ const MainLayout = () => {
             </div>
 
             <div
-              className="flex  gap-1 items-center justify-center cursor-pointer"
+              className={`flex gap-1 items-center justify-center cursor-pointer`}
               onClick={() => setOpen(!open)}
             >
               <img
-                width={32}
-                height={32}
                 src={user.avatar}
                 alt="userimage"
-                className="border rounded-full"
-                style={{ width: 32, height: 32 }}
+                className="border rounded-full w-[32px] h-[32px] shrink"
               />
-              <h5 className="mb-0 capitalize">{user.name}</h5>
+              <h5 className="mb-0 capitalize hidden md:block">{user.name}</h5>
             </div>
           </div>
         </Header>
 
         {open && (
-          <div className=" absolute flex flex-col justify-between border rounded-lg w-24  h-24 bg-gray-100 p-2 top-12  right-16  gap-1">
+          <div className=" absolute flex flex-col justify-between border rounded-lg w-24  h-24 bg-gray-100 p-2 top-md-12  right-md-16 top-12 right-4  gap-1">
             <Link
               to={"/"}
               className="m-0 p-0 font-normal text-sm text-gray-950 hover:text-blue-600"
