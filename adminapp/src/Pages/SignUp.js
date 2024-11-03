@@ -34,7 +34,6 @@ const SignUp = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const createdUser = useSelector((state) => state.auth.createdUser);
-
   const isSuccess = useSelector((state) => state.auth.isSuccess.registerUser);
   const isLoading = useSelector((state) => state.auth.isLoading.registerUser);
   const message = useSelector((state) => state.auth.message);

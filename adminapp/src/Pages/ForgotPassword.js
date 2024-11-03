@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect,} from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import signupBgImage from "../Assets/images-20230907T172340Z-001/images/Sign up  Loading  1.jpg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import CustomInput from "../Components/CustomInput";
 import IconBlue from "../Assets/logos and Icons-20230907T172301Z-001/logos and Icons/icon blue.svg";
 import LogoWhite from "../Assets/logos and Icons-20230907T172301Z-001/logos and Icons/Logo white.svg";
@@ -19,8 +19,12 @@ const FORGOT_PASSWORD_SCHEMA = Yup.object().shape({
 });
 
 const ForgotPassword = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const isSuccess = useSelector(
+    (state) => state.auth.isSuccess.requestPasswordResetToken
+  );
   const message = useSelector((state) => state.auth.message);
   const isLoading = useSelector(
     (state) => state.auth.isLoading.requestPasswordResetToken
@@ -43,6 +47,12 @@ const ForgotPassword = () => {
   useEffect(() => {
     if (isError && message) {
       setTimeout(() => {
+        dispatch(resetState());
+      }, 10000);
+    }
+    if (isSuccess && message) {
+      setTimeout(() => {
+        navigate("/");
         dispatch(resetState());
       }, 10000);
     }
@@ -79,6 +89,12 @@ const ForgotPassword = () => {
               Forgot your password?
             </h2>
 
+            {isSuccess && message && (
+              <div className="flex items-center justify-center">
+                <p className="text-blue-700 text-xs font-normal">{message}</p>
+              </div>
+            )}
+
             {isError && message && (
               <div className="flex items-center justify-center">
                 <p className="text-red-600 text-xs font-normal ">{message}</p>
@@ -87,7 +103,7 @@ const ForgotPassword = () => {
 
             <div className="my-6">
               <p className="text-default-gray-500 text-xs md:text-sm font-medium leading-5 ">
-                Don't fret! Just type your email and we will send you a code to
+                Don't fret! Just type your email and we will send you a link to
                 reset your password.
               </p>
             </div>

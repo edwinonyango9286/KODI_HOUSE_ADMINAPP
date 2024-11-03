@@ -58,6 +58,8 @@ const SignIn = () => {
   useEffect(() => {
     if (user && isSuccess) {
       navigate("/admin");
+    } else {
+      navigate("/");
     }
     if (isError && message) {
       setTimeout(() => {

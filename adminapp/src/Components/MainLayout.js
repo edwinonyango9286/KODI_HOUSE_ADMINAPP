@@ -22,19 +22,49 @@ import {
 import { HiOutlineDocumentChartBar } from "react-icons/hi2";
 import { BsBellFill } from "react-icons/bs";
 import { RiLogoutBoxRLine } from "react-icons/ri";
-import { IoMenuSharp } from "react-icons/io5";
-import { IoSearchSharp } from "react-icons/io5";
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser, resetState } from "../Features/auth/authSlice";
+import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
+import { MdEmail } from "react-icons/md";
 
 const { Header, Sider, Content } = Layout;
 
 const MainLayout = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const [collapsed, setCollapsed] = useState(false);
   const [open, setOpen] = useState(false);
+  const [inactiveTimeout, setInactiveTimeout] = useState(null);
+  const INACTIVITY_LIMIT = 20 * 60 * 1000;
+
+  const resetInactivityTimer = () => {
+    if (inactiveTimeout) {
+      clearTimeout(inactiveTimeout);
+    }
+    setInactiveTimeout(setTimeout(handleLogout, INACTIVITY_LIMIT));
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", resetInactivityTimer);
+    window.addEventListener("keydown", resetInactivityTimer);
+    window.addEventListener("click", resetInactivityTimer);
+    resetInactivityTimer();
+    return () => {
+      window.removeEventListener("mousemove", resetInactivityTimer);
+      window.removeEventListener("keydown", resetInactivityTimer);
+      window.removeEventListener("click", resetInactivityTimer);
+      if (inactiveTimeout) {
+        clearTimeout(inactiveTimeout);
+      }
+    };
+  }, []);
+
   const {
-    token: { colorBgContainer },
+    token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+
+  const isSuccess = useSelector((state) => state.auth.isSuccess.logoutUser);
 
   const handleResize = () => {
     if (window.innerWidth < 640) {
@@ -51,6 +81,17 @@ const MainLayout = () => {
     };
   }, []);
 
+  const handleLogout = () => {
+    dispatch(logoutUser());
+    dispatch(resetState());
+  };
+
+  useEffect(() => {
+    if (isSuccess) {
+      navigate("/");
+    }
+  }, [isSuccess, navigate]);
+
   return (
     <Layout>
       <Sider trigger={null} collapsible collapsed={collapsed}>
@@ -66,6 +107,7 @@ const MainLayout = () => {
         )}
 
         <Menu
+          theme="light"
           mode="inline"
           defaultSelectedKeys={[""]}
           onClick={({ key }) => {
@@ -73,7 +115,7 @@ const MainLayout = () => {
           }}
           items={[
             {
-              key: "user",
+              key: "profile",
               icon: collapsed ? (
                 <PiLightningBold className="text-sm" />
               ) : (
@@ -84,32 +126,35 @@ const MainLayout = () => {
               ) : (
                 <div className="flex items-center gap-2">
                   <span className="capitalize">
-                    Welcome {user.name.split(" ")[0]}
+                    Welcome {user?.name?.split(" ")[0]}
                   </span>
-                  <RiLogoutBoxRLine className="text-sm" />
+                  <RiLogoutBoxRLine
+                    className="text-sm"
+                    onClick={handleLogout}
+                  />
                 </div>
               ),
             },
 
             {
-              key: "/",
+              key: "dashboard",
               icon: <AiOutlineHome className="text-sm" />,
-              label: <span className="">Dashboard</span>,
+              label: "Dashboard",
             },
             {
-              key: "Applications",
+              key: "applications",
               icon: <FiMail className="text-sm" />,
               label: "Applications",
             },
 
             {
-              key: "Tenants",
+              key: "tenants",
               icon: <FiUsers className="text-sm" />,
               label: "Tenants",
             },
 
             {
-              key: "Users",
+              key: "users",
               icon: <BiUserCircle className="text-sm" />,
               label: "Users",
             },
@@ -121,41 +166,41 @@ const MainLayout = () => {
             },
 
             {
-              key: "Finances",
+              key: "finances",
               icon: <BsBriefcase className="text-sm" />,
               label: "Finances",
               children: [
                 {
-                  key: "Invoices",
+                  key: "invoices",
                   label: "Invoices",
                 },
                 {
-                  key: "Leases",
+                  key: "leases",
                   label: "Leases",
                 },
                 {
-                  key: "Expenses",
+                  key: "expences",
                   label: "Expenses",
                 },
                 {
-                  key: "Receipts",
+                  key: "receipts",
                   label: "Receipts",
                 },
               ],
             },
             {
-              key: "Task",
+              key: "tasks",
               icon: <FiServer className="text-sm" />,
               label: "Task",
             },
             {
-              key: "Messages",
+              key: "messages",
               icon: <HiOutlineInboxIn className="text-sm" />,
               label: "Messages",
             },
 
             {
-              key: "Noticeboard",
+              key: "noticeboard",
               icon: <HiOutlineSpeakerphone className="text-sm" />,
               label: "Noticebaord",
             },
@@ -172,27 +217,27 @@ const MainLayout = () => {
               label: "Reports",
               children: [
                 {
-                  key: "Payment Reports",
+                  key: "expenses-reports",
                   label: "Expenses",
                 },
                 {
-                  key: "Expenses vs Income",
+                  key: "expenses-vs-income",
                   label: "Expenses vs Income",
                 },
               ],
             },
             {
-              key: "Referrals",
+              key: "referrals",
               icon: <HiOutlineLink className="text-sm" />,
               label: "Referrals",
             },
             {
-              key: "Support Tickets",
+              key: "support-tickets",
               icon: <HiOutlineSupport className="text-sm" />,
               label: "Support Tickets",
             },
             {
-              key: "Setups",
+              key: "setups",
               icon: <HiAdjustments className="text-sm" />,
               label: "Setups",
             },
@@ -207,31 +252,24 @@ const MainLayout = () => {
         >
           <Button
             type="text"
-            icon={<IoMenuSharp className="text-xl" />}
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed(!collapsed)}
-            className="trigger ml-1 ml-lg-4"
+            style={{
+              fontSize: "16px",
+              width: 64,
+              height: 64,
+            }}
           />
 
-          <div className="">
-            <input
-              type="text"
-              className={` bg-gray-100 rounded-md border border-gray-200 focus:outline-none placeholder-gray-500 placeholder:text-sm relative pl-6 pl-lg-9 w-[172px] h-[26px]  md:w-[220px]  lg:w-[450px]  lg:h-[34px]`}
-              placeholder="Search"
-            />
-            <IoSearchSharp
-              className={`${
-                !collapsed ? "left-8" : "left-12"
-              } text-base absolute text-gray-500 md:top-[25px] md:left-[108px] lg:top-[26px] lg:left-[242px] top-6`}
-            />
-          </div>
-
           <div
-            className={` ${
-              !collapsed ? "hidden" : " md:block"
-            } flex gap-1 gap-sm-2 gap-lg-4 items-center justify-center mr-4 mr-lg-8`}
+            className={`${
+              !collapsed
+                ? "hidden md:flex gap-2 lg:gap-4 items-center justify-center mr-4 mr-lg-8"
+                : "flex gap-2 lg:gap-4 items-center justify-center mr-4 mr-lg-8"
+            }`}
           >
             <div className="position-relative">
-              <FiMail className="text-base" />
+              <MdEmail className="text-base" />
             </div>
             <div className="position-relative">
               <BsBellFill className="text-base" />
@@ -242,19 +280,19 @@ const MainLayout = () => {
               onClick={() => setOpen(!open)}
             >
               <img
-                src={user.avatar}
+                src={user?.avatar}
                 alt="userimage"
                 className="border rounded-full w-[32px] h-[32px] shrink"
               />
-              <h5 className="mb-0 capitalize hidden md:block">{user.name}</h5>
+              <h5 className="mb-0 capitalize hidden md:block">{user?.name}</h5>
             </div>
           </div>
         </Header>
 
         {open && (
-          <div className=" absolute flex flex-col justify-between border rounded-lg w-24  h-24 bg-gray-100 p-2 top-md-12  right-md-16 top-12 right-4  gap-1">
+          <div className="absolute flex flex-col justify-between border rounded-lg w-24  h-24 bg-gray-100 p-2 top-md-12  right-md-16  lg:right-32  top-12 right-8 ">
             <Link
-              to={"/"}
+              to={"profile"}
               className="m-0 p-0 font-normal text-sm text-gray-950 hover:text-blue-600"
             >
               My Profile
@@ -266,7 +304,7 @@ const MainLayout = () => {
               Edit Profile
             </Link>
             <Link
-              to={"/"}
+              onClick={handleLogout}
               className="m-0 p-0 font-normal text-sm text-gray-950 hover:text-blue-600"
             >
               Logout
@@ -280,6 +318,7 @@ const MainLayout = () => {
             padding: 24,
             minHeight: 280,
             background: colorBgContainer,
+            borderRadius: borderRadiusLG,
           }}
         >
           <Outlet />

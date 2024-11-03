@@ -56,6 +56,17 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
+export const logoutUser = createAsyncThunk(
+  "auth/logout-user",
+  async (thunkAPI) => {
+    try {
+      return await authService.logout();
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
 export const resetState = createAction("Reset_all");
 
 const initialState = {
@@ -68,6 +79,7 @@ const initialState = {
     loginUser: false,
     requestPasswordResetToken: false,
     resetPassword: false,
+    logoutUser: false,
   },
   isLoading: {
     registerUser: false,
@@ -75,6 +87,7 @@ const initialState = {
     loginUser: false,
     requestPasswordResetToken: false,
     resetPassword: false,
+    logoutUser: false,
   },
   isSuccess: {
     registerUser: false,
@@ -82,6 +95,7 @@ const initialState = {
     loginUser: false,
     requestPasswordResetToken: false,
     resetPassword: false,
+    logoutUser: false,
   },
   message: "",
 };
@@ -145,7 +159,7 @@ const authSlice = createSlice({
         state.isLoading.loginUser = false;
         state.isSuccess.loginUser = true;
         state.user = action?.payload;
-        state.message = action?.payload?.response?.data?.message;
+        state.message = action?.payload?.message;
         localStorage.setItem("user", JSON.stringify(action?.payload));
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -165,7 +179,8 @@ const authSlice = createSlice({
         state.isError.requestPasswordResetToken = false;
         state.isLoading.requestPasswordResetToken = false;
         state.isSuccess.requestPasswordResetToken = true;
-        state.message = action?.payload?.response?.data?.message;
+        state.message = action?.payload?.message;
+        console.log(state.message);
       })
       .addCase(requestPasswordResetToken.rejected, (state, action) => {
         state.isError.requestPasswordResetToken = true;
@@ -184,7 +199,7 @@ const authSlice = createSlice({
         state.isError.resetPassword = false;
         state.isLoading.resetPassword = false;
         state.isSuccess.resetPassword = true;
-        state.message = action?.payload?.response?.data?.message;
+        state.message = action?.payload?.message;
       })
       .addCase(resetPassword.rejected, (state, action) => {
         state.isError.resetPassword = true;
@@ -196,7 +211,26 @@ const authSlice = createSlice({
           state.message = "Something went wrong. Please try again later.";
         }
       })
-
+      .addCase(logoutUser.pending, (state) => {
+        state.isLoading.logoutUser = true;
+      })
+      .addCase(logoutUser.fulfilled, (state, action) => {
+        state.isError.logoutUser = false;
+        state.isLoading.logoutUser = false;
+        state.isSuccess.logoutUser = true;
+        state.message = action?.payload?.message;
+        localStorage.removeItem("user");
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.isError.logoutUser = true;
+        state.isLoading.logoutUser = false;
+        state.isSuccess.logoutUser = false;
+        if (action?.payload?.response?.data?.message) {
+          state.message = action?.payload?.response?.data?.message;
+        } else {
+          state.message = "Something went wrong. Please try again later.";
+        }
+      })
       .addCase(resetState, () => initialState);
   },
 });
