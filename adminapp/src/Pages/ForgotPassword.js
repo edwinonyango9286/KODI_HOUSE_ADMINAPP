@@ -116,8 +116,8 @@ const ForgotPassword = () => {
                 id="email"
                 className={`border ${
                   formik.touched.email && formik.errors.email
-                    ? "border-red-600"
-                    : "border-gray-300"
+                    ? "border-red-600 border-1.5"
+                    : "border-gray-300 border-1.5"
                 } rounded-lg`}
                 onChange={formik.handleChange("email")}
                 onBlur={formik.handleBlur("email")}

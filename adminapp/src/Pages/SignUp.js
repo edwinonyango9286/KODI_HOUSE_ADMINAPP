@@ -168,8 +168,8 @@ const SignUp = () => {
                 id="name"
                 className={`border ${
                   formik.touched.name && formik.errors.name
-                    ? "border-red-600"
-                    : "border-gray-300"
+                    ? "border-red-600 border-1.5"
+                    : "border-gray-300 border-1.5"
                 } rounded-lg`}
                 onChange={formik.handleChange("name")}
                 onBlur={formik.handleBlur("name")}
@@ -198,8 +198,8 @@ const SignUp = () => {
                 placeholder="name@example.com"
                 className={`border ${
                   formik.touched.email && formik.errors.email
-                    ? "border-red-600"
-                    : "border-gray-300"
+                    ? "border-red-600 border-1.5"
+                    : "border-gray-300 border-1.5"
                 } rounded-lg`}
                 id="pass"
                 onChange={formik.handleChange("email")}
@@ -233,8 +233,8 @@ const SignUp = () => {
                 id="password"
                 className={`border ${
                   formik.touched.password && formik.errors.password
-                    ? "border-red-600"
-                    : "border-gray-300"
+                    ? "border-red-600 border-1.5"
+                    : "border-gray-300 border-1.5"
                 } rounded-lg`}
                 onChange={formik.handleChange("password")}
                 onBlur={formik.handleBlur("password")}
@@ -297,7 +297,7 @@ const SignUp = () => {
                 to="/"
                 className="text-blue-600 text-sm leading-5 font-medium ml-2"
               >
-                Login here
+                Signin
               </Link>
             </div>
           </form>

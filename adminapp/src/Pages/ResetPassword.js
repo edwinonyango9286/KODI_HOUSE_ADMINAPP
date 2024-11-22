@@ -130,8 +130,8 @@ const ResetPassword = () => {
                 id="password"
                 className={`border ${
                   formik.touched.password && formik.errors.password
-                    ? "border-red-600"
-                    : "border-gray-300"
+                    ? "border-red-600 border-1.5"
+                    : "border-gray-300 border-1.5"
                 } rounded-lg`}
                 onChange={formik.handleChange("password")}
                 onBlur={formik.handleBlur("password")}
@@ -168,8 +168,8 @@ const ResetPassword = () => {
                 className={`border ${
                   formik.touched.reenterPassword &&
                   formik.errors.reenterPassword
-                    ? "border-red-600"
-                    : "border-gray-300"
+                    ? "border-red-600 border-1.5"
+                    : "border-gray-300 border-1.5"
                 } rounded-lg`}
                 onChange={formik.handleChange("reenterPassword")}
                 onBlur={formik.handleBlur("reenterPassword")}

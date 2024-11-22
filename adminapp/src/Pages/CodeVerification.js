@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import signupBgImage from "../Assets/images-20230907T172340Z-001/images/Sign up  Loading  1.jpg";
 import IconBlue from "../Assets/logos and Icons-20230907T172301Z-001/logos and Icons/icon blue.svg";
 import LogoWhite from "../Assets/logos and Icons-20230907T172301Z-001/logos and Icons/Logo white.svg";
@@ -21,6 +21,7 @@ const CODE_VERIFICATION_SCHEMA = Yup.object({
 });
 
 const CodeVerification = () => {
+  const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const createdUser = JSON.parse(localStorage.getItem("createdUser"));
@@ -39,6 +40,7 @@ const CodeVerification = () => {
   );
 
   const message = useSelector((state) => state.auth.message);
+
   const formik = useFormik({
     initialValues: {
       code1: "",
@@ -88,6 +90,53 @@ const CodeVerification = () => {
       }, 10000);
     }
   }, [isSuccess, activateUser, isError, message, dispatch]);
+
+  const handleKeyUp = (index, e) => {
+    const currentInput = inputRefs[index].current;
+    if (currentInput.value) {
+      if (index < 3) {
+        inputRefs[index + 1].current.focus();
+      }
+    }
+  };
+
+  const handleKeyDown = (index, e) => {
+    if (
+      e.key === "Backspace" &&
+      !formik.values[`code${index + 1}`] &&
+      index > 0
+    ) {
+      inputRefs[index - 1].current.focus();
+    }
+  };
+
+  const handleInput = (e) => {
+    const value = e.target.value.replace(/[^\d]/g, "");
+    e.target.value = value.slice(-1);
+  };
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData
+      .getData("text")
+      .replace(/[^\d]/g, "")
+      .slice(0, 4);
+
+    [...pastedData].forEach((char, index) => {
+      if (index < 4) {
+        formik.setFieldValue(`code${index + 1}`, char);
+      }
+    });
+
+    const nextEmptyIndex = [...Array(4)].findIndex(
+      (_, i) => !formik.values[`code${i + 1}`]
+    );
+    if (nextEmptyIndex !== -1 && nextEmptyIndex < 4) {
+      inputRefs[nextEmptyIndex].current.focus();
+    } else {
+      inputRefs[3].current.focus();
+    }
+  };
 
   const handleResendEmail = () => {
     if (createdUser) {
@@ -171,70 +220,32 @@ const CodeVerification = () => {
             </div>
 
             <div className="flex justify-center items-center flex-shrink gap-8 mb-3">
-              <input
-                type="text"
-                pattern="[0-9]*"
-                inputMode="numeric"
-                name="code1"
-                className={`border ${
-                  formik.touched.code1 && formik.errors.code1
-                    ? "border-red-600"
-                    : "border-gray-400"
-                } rounded-lg text-center text-2xl text-gray-800 font-bold focus:outline-none focus:border-blue-600 transition duration-200`}
-                style={{ width: 58, height: 60 }}
-                maxLength={1}
-                onChange={formik.handleChange("code1")}
-                onBlur={formik.handleBlur("code1")}
-                value={formik.values.code1}
-              />
-              <input
-                type="text"
-                pattern="[0-9]*"
-                inputMode="numeric"
-                name="code2"
-                className={`border ${
-                  formik.touched.code2 && formik.errors.code2
-                    ? "border-red-600"
-                    : "border-gray-400"
-                } rounded-lg text-center text-2xl text-gray-800 font-bold focus:outline-none focus:border-blue-600 transition duration-200`}
-                style={{ width: 58, height: 60 }}
-                maxLength={1}
-                onChange={formik.handleChange("code2")}
-                onBlur={formik.handleBlur("code2")}
-                value={formik.values.code2}
-              />
-              <input
-                type="text"
-                pattern="[0-9]*"
-                inputMode="numeric"
-                name="code3"
-                className={`border ${
-                  formik.touched.code3 && formik.errors.code3
-                    ? "border-red-600"
-                    : "border-gray-400"
-                } rounded-lg text-center text-2xl text-gray-800 font-bold focus:outline-none focus:border-blue-600 transition duration-200`}
-                style={{ width: 58, height: 60 }}
-                maxLength={1}
-                onChange={formik.handleChange("code3")}
-                onBlur={formik.handleBlur("code3")}
-                value={formik.values.code3}
-              />
-              <input
-                type="text"
-                pattern="[0-9]*"
-                inputMode="numeric"
-                name="code4"
-                className={`border ${
-                  formik.touched.code4 && formik.errors.code4
-                    ? "border-red-600"
-                    : "border-gray-400"
-                } rounded-lg text-center text-2xl text-gray-800 font-bold focus:outline-none focus:border-blue-600 transition duration-200`}
-                style={{ width: 58, height: 60 }}
-                maxLength={1}
-                onChange={formik.handleChange("code4")}
-                onBlur={formik.handleBlur("code4")}
-                value={formik.values.code4}
-              />
+              {[1, 2, 3, 4].map((num, index) => (
+                <input
+                  key={num}
+                  ref={inputRefs[index]}
+                  type="text"
+                  pattern="[0-9]*"
+                  inputMode="numeric"
+                  name={`code${num}`}
+                  className={`border ${
+                    formik.touched[`code${num}`] && formik.errors[`code${num}`]
+                      ? "border-red-600 border-1.5"
+                      : "border-gray-400 border-1.5"
+                  } rounded-lg text-center text-2xl text-gray-800 font-bold focus:outline-none focus:border-blue-600 transition duration-200`}
+                  style={{ width: 58, height: 60 }}
+                  maxLength={1}
+                  value={formik.values[`code${num}`]}
+                  onChange={(e) => {
+                    handleInput(e);
+                    formik.handleChange(e);
+                  }}
+                  onKeyUp={(e) => handleKeyUp(index, e)}
+                  onKeyDown={(e) => handleKeyDown(index, e)}
+                  onPaste={handlePaste}
+                  onBlur={formik.handleBlur(`code${num}`)}
+                />
+              ))}
             </div>
 
             {isLoading ? (

@@ -36,7 +36,7 @@ const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [open, setOpen] = useState(false);
   const [inactiveTimeout, setInactiveTimeout] = useState(null);
-  const INACTIVITY_LIMIT = 20 * 60 * 1000;
+  const INACTIVITY_LIMIT = 24 * 60 * 60 * 1000;
 
   const resetInactivityTimer = () => {
     if (inactiveTimeout) {
@@ -94,13 +94,20 @@ const MainLayout = () => {
 
   return (
     <Layout>
-      <Sider trigger={null} collapsible collapsed={collapsed}>
+      <Sider
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        style={{
+          backgroundColor: "#2563EB",
+        }}
+      >
         {collapsed ? (
-          <div className="flex items-center justify-center bg-blue-600 h-16 gap-2">
+          <div className="flex items-center justify-center h-16 gap-2">
             <img className="w-8 h-8" src={logo} alt="logo" />
           </div>
         ) : (
-          <div className="flex items-center justify-center bg-blue-600 h-16 gap-2">
+          <div className="flex items-center justify-center h-16 gap-2">
             <img className="w-8 h-8" src={logo} alt="logo" />
             <h2 className="text-white text-base font-medium">Kodi House</h2>
           </div>
@@ -264,8 +271,8 @@ const MainLayout = () => {
           <div
             className={`${
               !collapsed
-                ? "hidden md:flex gap-2 lg:gap-4 items-center justify-center mr-4 mr-lg-8"
-                : "flex gap-2 lg:gap-4 items-center justify-center mr-4 mr-lg-8"
+                ? "hidden md:flex gap-2 lg:gap-4 items-center justify-center mr-4 lg:mr-8"
+                : "flex gap-2 lg:gap-4 items-center justify-center mr-4 lg:mr-8"
             }`}
           >
             <div className="position-relative">
@@ -290,7 +297,7 @@ const MainLayout = () => {
         </Header>
 
         {open && (
-          <div className="absolute flex flex-col justify-between border rounded-lg w-24  h-24 bg-gray-100 p-2 top-md-12  right-md-16  lg:right-32  top-12 right-8 ">
+          <div className="absolute flex flex-col justify-between border rounded-lg w-24 h-24 bg-gray-100 p-2 md:right-32  lg:right-36  top-12 right-8">
             <Link
               to={"profile"}
               className="m-0 p-0 font-normal text-sm text-gray-950 hover:text-blue-600"
