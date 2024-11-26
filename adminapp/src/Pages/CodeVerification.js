@@ -13,11 +13,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 
-const CODE_VERIFICATION_SCHEMA = Yup.object({
-  code1: Yup.number().required().integer().min(0),
-  code2: Yup.number().required().integer().min(0),
-  code3: Yup.number().required().integer().min(0),
-  code4: Yup.number().required().integer().min(0),
+const CODE_VERIFICATION_SCHEMA = Yup.object().shape({
+  code1: Yup.number().required().integer().min(0).max(9),
+  code2: Yup.number().required().integer().min(0).max(9),
+  code3: Yup.number().required().integer().min(0).max(9),
+  code4: Yup.number().required().integer().min(0).max(9),
 });
 
 const CodeVerification = () => {
@@ -138,6 +138,7 @@ const CodeVerification = () => {
     }
   };
 
+  
   const handleResendEmail = () => {
     if (createdUser) {
       const resendData = {
